@@ -19,6 +19,7 @@ typedef ExpVal (*ExpEvaluator)(Exp, Env);
 
 /**
  * Evaluates a given expression.
+ *
  * Type: ExpEvaluator
  */
 ExpVal value_of(Exp, Env);
