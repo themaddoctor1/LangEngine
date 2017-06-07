@@ -31,7 +31,7 @@ Exp newBlankExp(void*);
  * type - The type of expression represented
  * args - The arguments to be provided to the expression.
  */
-Exp buildExp(char* type, void* args);
+Exp buildExp(int type, void* args);
 
 /**
  * Destructs a basic Exp structure.

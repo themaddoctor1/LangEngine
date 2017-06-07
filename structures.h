@@ -6,7 +6,7 @@
  * to form our syntax trees.
  */
 struct expression {
-    char type[32]; /* A name used for parsing the type of expression */
+    int type; /* A name used for parsing the type of expression */
     void *args; /* The subexpressions that make up the expression */
 };
 typedef struct expression* Exp;
@@ -16,8 +16,8 @@ typedef struct expression* Exp;
  * tracks  the values of existing variables.
  */
 struct environment {
-    char *type; /* A value to distinguish between the types of environments */
-    void **args;
+    int type; /* A value to distinguish between the types of environments */
+    void *args;
 };
 typedef struct environment* Env;
 
@@ -25,7 +25,7 @@ typedef struct environment* Env;
  * To store values, we need to have a wrapper that stores the value.
  */
 struct expval {
-    char *type; /* The name of the expval template used */
+    int type; /* The name of the expval template used */
     void *value;
 };
 typedef struct expval* ExpVal;

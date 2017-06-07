@@ -9,10 +9,10 @@ Exp newBlankExp(void* args) {
     return exp;
 }
 
-Exp buildExp(char* type, void* args) {
+Exp buildExp(int type, void* args) {
     Exp exp = (Exp) malloc(sizeof(struct expression));
     exp->args = args;
-    strcpy(exp->type, type);
+    exp->type = type;
     return exp;
 }
 
