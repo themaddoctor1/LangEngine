@@ -19,7 +19,7 @@ void autoDisposeEnv(Env);
  * A type that represent functions that
  * search an environment for a variable.
  */
-typedef ExpVal (*ApplyEnv)(char*, Env);
+typedef ExpVal (*ApplyEnv)(Env, char*);
 
 /**
  * Looks up the value of the variable associated with a given
@@ -27,6 +27,6 @@ typedef ExpVal (*ApplyEnv)(char*, Env);
  *
  * Type: {char*, Env} -> ExpVal
  */
-ExpVal apply_env(char*, Env);
+ExpVal apply_env(Env, char*);
 
 #endif
