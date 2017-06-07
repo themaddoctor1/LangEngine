@@ -1,9 +1,11 @@
+# The language to compile
+LANG=firstlang
 
 CC = gcc
 
-CFLAGS = -Wall -Werror --pedantic -Iinclude -lm -g
+CFLAGS = -Wall -Werror --pedantic -I. -lm -g
 
-SRCS=$(wildcard ./*.c)
+SRCS=$(wildcard ./*.c) $(wildcard ./$(LANG)/*.c)
 OBJS=$(SRCS:.c=.o)
 
 EXEC=exec
