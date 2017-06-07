@@ -6,7 +6,7 @@ CFLAGS = -Wall -Werror --pedantic -Iinclude -lm -g
 SRCS=$(wildcard ./*.c)
 OBJS=$(SRCS:.c=.o)
 
-EXEC=nnet
+EXEC=exec
 
 all: $(OBJS)
 	$(CC) -o $(EXEC) $^ $(CFLAGS)
