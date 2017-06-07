@@ -7,9 +7,42 @@
  * Defines ExpConstructor to be a function type for
  * creating Exps.
  *
- * void** -> Exp
+ * void* -> Exp
  */
-typedef Exp (*ExpConstructor)(void**);
+typedef Exp (*ExpConstructor)(void*);
+
+/**
+ * Defines destructor function type for deleting Exps
+ *
+ * Exp -> void
+ */
+typedef void (*ExpDestructor)(Exp);
+
+/**
+ * Creates a blank expression.
+ *
+ * note: type should be defined by the user.
+ */
+Exp newBlankExp(void*);
+
+/**
+ * Full constructor that creates an expression.
+ *
+ * type - The type of expression represented
+ * args - The arguments to be provided to the expression.
+ */
+Exp buildExp(char* type, void* args);
+
+/**
+ * Destructs a basic Exp structure.
+ */
+void disposeExp(Exp);
+
+/**
+ * Function that should be written to automatically run the
+ * correct destructor for the given Exp.
+ */
+void autoDisposeExp(Exp);
 
 /**
  * Defines a type that evaluates an expression.

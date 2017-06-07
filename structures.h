@@ -6,9 +6,8 @@
  * to form our syntax trees.
  */
 struct expression {
-    char *type; /* A name used for parsing the type of expression */
-    void **args; /* The subexpressions that make up the expression */
-    void *util; /* Extra field for utility values */
+    char type[32]; /* A name used for parsing the type of expression */
+    void *args; /* The subexpressions that make up the expression */
 };
 typedef struct expression* Exp;
 
