@@ -18,6 +18,7 @@ typedef struct expression* Exp;
 struct environment {
     int type; /* A value to distinguish between the types of environments */
     void *args;
+    struct environment *subenv; /* The subenvironment, if one exists */
 };
 typedef struct environment* Env;
 

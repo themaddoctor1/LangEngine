@@ -1,16 +1,21 @@
 #include "environments.h"
+#include "structures.h"
 
-Env newBlankEnv(void* args) {
+#include <stdlib.h>
+
+Env newBlankEnv(void* args, Env subenv) {
     Env env = (Env) malloc(sizeof(struct environment));
     env->args = args;
-    return exp;
+    env->subenv = subenv;
+    return env;
 }
 
-Env buildEnv(int type, void* args) {
+Env buildEnv(int type, void* args, Env subenv) {
     Env env = (Env) malloc(sizeof(struct environment));
     env->args = args;
     env->type = type;
-    return exp;
+    env->subenv = subenv;
+    return env;
 }
 
 void disposeEnv(Env env) {

@@ -6,11 +6,11 @@
 /**
  * Environment constructor and destructor types.
  */
-typedef Env (*EnvConstructor)(void*);
+typedef Env (*EnvConstructor)(void*, Env);
 typedef void (*EnvDestructor)(Env);
 
-Env newBlankEnv(void*);
-Env buildEnv(int, void*);
+Env newBlankEnv(void*, Env);
+Env buildEnv(int, void*, Env);
 
 void disposeEnv(Env);
 void autoDisposeEnv(Env);
