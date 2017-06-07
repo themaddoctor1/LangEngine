@@ -10,7 +10,7 @@ typedef Env (*EnvConstructor)(void*);
 typedef void (*EnvDestructor)(Env);
 
 Env newBlankEnv(void*);
-Exp buildExp(int, void*);
+Env buildEnv(int, void*);
 
 void disposeEnv(Env);
 void autoDisposeEnv(Env);
