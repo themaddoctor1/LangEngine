@@ -1,7 +1,10 @@
+#include "linkedlist.h"
+
+#include <stdlib.h>
 
 struct llnode {
-    LLnode prev;
-    LLnode next;
+    struct llnode *prev;
+    struct llnode *next;
     void *item;
 };
 
@@ -53,9 +56,9 @@ void push(LinkedList ll, void *item) {
     ll->size++;
 }
 
-void* pop(LinkedList ll, void *item) {
+void* pop(LinkedList ll) {
     if (!ll->head)
-        return;
+        return NULL;
 
     LLnode head = ll->head;
     
