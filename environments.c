@@ -3,13 +3,6 @@
 
 #include <stdlib.h>
 
-Env newBlankEnv(void* args, Env subenv) {
-    Env env = (Env) malloc(sizeof(struct environment));
-    env->args = args;
-    env->subenv = subenv;
-    return env;
-}
-
 Env buildEnv(int type, void* args, Env subenv) {
     Env env = (Env) malloc(sizeof(struct environment));
     env->args = args;
