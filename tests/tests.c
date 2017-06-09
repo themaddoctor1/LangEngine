@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "test/expression_tests.h"
+#include "tests/expression_tests.h"
 
 /* Collection of test scripts */
 int (**tests)() = NULL;
