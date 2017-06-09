@@ -9,8 +9,4 @@ ExpVal buildExpVal(int type, void *val) {
     return expval;
 }
 
-void disposeExpVal(ExpVal expval) {
-    free(expval->value);
-    free(expval);
-}
 

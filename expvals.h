@@ -5,5 +5,6 @@
 
 ExpVal buildExpVal(int, void*);
 void disposeExpVal(ExpVal);
+ExpVal cloneExpVal(ExpVal);
 
 #endif
