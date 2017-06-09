@@ -6,7 +6,6 @@
 Env buildEnv(int, void*, Env);
 
 void disposeEnv(Env);
-void autoDisposeEnv(Env);
 
 /**
  * A type that represent functions that

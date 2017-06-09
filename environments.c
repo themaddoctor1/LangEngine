@@ -11,9 +11,4 @@ Env buildEnv(int type, void* args, Env subenv) {
     return env;
 }
 
-void disposeEnv(Env env) {
-    free(env->args);
-    free(env);
-}
-
 
