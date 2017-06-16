@@ -1,5 +1,5 @@
-#include "environments.h"
-#include "structures.h"
+#include "include/environments.h"
+#include "include/structures.h"
 
 #include <stdlib.h>
 

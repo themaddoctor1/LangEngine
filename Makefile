@@ -5,10 +5,12 @@ CC = gcc
 
 CFLAGS = -Wall -Werror --pedantic -I. -lm -g
 
-LANG_SRCS=$(wildcard ./*.c) $(wildcard ./$(LANG)_files/*.c)
+MAIN_SRCS=$(wildcard ./src/*.c)
+
+LANG_SRCS=$(MAIN_SRCS) $(wildcard ./$(LANG)_files/*.c)
 LANG_OBJS=$(LANG_SRCS:.c=.o)
 
-TEST_SRCS=$(wildcard ./*.c) $(wildcard ./tests/*.c)
+TEST_SRCS=$(MAIN_SRCS) $(wildcard ./tests/*.c)
 TEST_OBJS=$(TEST_SRCS:.c=.o)
 
 TEST=test
