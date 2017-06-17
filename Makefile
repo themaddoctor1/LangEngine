@@ -3,7 +3,7 @@ LANG=testlang
 
 CC = gcc
 
-CFLAGS = -Wall -Werror --pedantic -I. -lm -g
+CFLAGS = -Wall -Werror --pedantic -I./include/ -lm -g
 
 MAIN_SRCS=$(wildcard ./src/*.c)
 
@@ -15,12 +15,8 @@ TEST_OBJS=$(TEST_SRCS:.c=.o)
 
 TEST=test
 
-show-files:
-	echo "lang objs:" $(LANG_OBJS)
-	echo "test objs:" $(TEST_OBJS)
-
 test: $(TEST_OBJS)
-	cc $^ -o $(TEST) $(CFLAGS)
+	cc $^ -o $(TEST) $(CFLAGS) -I./tests/
 
 test-clean:
 	rm -f $(TEST_OBJS)
@@ -29,7 +25,7 @@ test-fclean:
 	rm -f $(TEST_OBJS) $(TEST)
 
 lang: $(LANG_OBJS)
-	cc $^ -o $(LANG) $(CFLAGS)
+	cc $^ -o $(LANG) $(CFLAGS) -I./$(LANG)_files/
 
 lang-clean:
 	rm -f $(LANG_OBJS)

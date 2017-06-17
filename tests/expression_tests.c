@@ -1,4 +1,4 @@
-#include "tests/expression_tests.h"
+#include "expression_tests.h"
 
 #include <stdio.h>
 #include <stdlib.h>
