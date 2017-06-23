@@ -41,6 +41,15 @@ LinkedList makeLinkedList() {
     return list;
 }
 
+LinkedList buildLinkedList(void **items) {
+    LinkedList list = makeLinkedList();
+    int i;
+    for (i = 0; items[i]; i++)
+        enqueue(list, items[i]);
+
+    return list;
+}
+
 void disposeLinkedList(LinkedList ll) {
     while (ll->head)
         pop(ll);
@@ -75,7 +84,7 @@ void* pop(LinkedList ll) {
     return disposeLLnode(head);
 }
 
-void insert(LinkedList ll, void *item, int idx) {
+void insertToLL(LinkedList ll, void *item, int idx) {
     if (!idx) {
         push(ll, item);
         return;
@@ -98,7 +107,7 @@ void insert(LinkedList ll, void *item, int idx) {
     ll->size++;
 }
 
-void *remove(LinkedList ll, int idx) {
+void *removeFromLL(LinkedList ll, int idx) {
     if (!idx)
         return pop(ll);
 
