@@ -64,7 +64,7 @@ void push(LinkedList ll, void *item) {
 
     ll->size++;
 }
-
+#include <stdio.h>
 void* pop(LinkedList ll) {
     if (!ll->head)
         return NULL;
@@ -132,10 +132,12 @@ void *removeFromLL(LinkedList ll, int idx) {
 
 void enqueue(LinkedList ll, void *item) {
     LLnode node = makeLLnode(ll->tail, item, NULL);
-
+    
     ll->tail = node;
     if (!ll->head)
         ll->head = ll->tail;
+    else
+        node->prev->next = node;
 
     ll->size++;
 }
