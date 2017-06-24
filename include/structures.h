@@ -7,7 +7,7 @@
  */
 struct expression {
     int type; /* A name used for parsing the type of expression */
-    void *args; /* The subexpressions that make up the expression */
+    void **args; /* The subexpressions that make up the expression */
 };
 typedef struct expression* Exp;
 
