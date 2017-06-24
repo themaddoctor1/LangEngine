@@ -3,7 +3,7 @@ LANG=testlang
 
 CC = gcc
 
-CFLAGS = -Wall -Werror --pedantic -I./include/ -lm -g
+CFLAGS = -Wall -Werror --pedantic -I./include/ -I./tests/ -I./$(LANG)_files/ -lm -g
 
 MAIN_SRCS=$(wildcard ./src/*.c)
 
@@ -24,6 +24,8 @@ test-clean:
 test-fclean:
 	rm -f $(TEST_OBJS) $(TEST)
 
+test-re: test-fclean test
+
 lang: $(LANG_OBJS)
 	cc $^ -o $(LANG) $(CFLAGS) -I./$(LANG)_files/
 
@@ -32,4 +34,6 @@ lang-clean:
 
 lang-fclean:
 	rm -f $(LANG_OBJS) $(LANG)
+
+lang-re: lang-fclean lang
 
