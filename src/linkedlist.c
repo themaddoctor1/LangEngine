@@ -1,6 +1,7 @@
 #include "linkedlist.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 
 struct llnode {
     struct llnode *prev;
@@ -38,6 +39,7 @@ void* disposeLLnode(LLnode node) {
 LinkedList makeLinkedList() {
     LinkedList list = (LinkedList) malloc(sizeof(struct linkedlist));
     list->head = list->tail = NULL;
+    list->size = 0;
     return list;
 }
 
@@ -64,7 +66,7 @@ void push(LinkedList ll, void *item) {
 
     ll->size++;
 }
-#include <stdio.h>
+
 void* pop(LinkedList ll) {
     if (!ll->head)
         return NULL;
@@ -134,10 +136,10 @@ void enqueue(LinkedList ll, void *item) {
     LLnode node = makeLLnode(ll->tail, item, NULL);
     
     ll->tail = node;
-    if (!ll->head)
-        ll->head = ll->tail;
-    else
+    if (ll->head)
         node->prev->next = node;
+    else
+        ll->head = ll->tail;
 
     ll->size++;
 }
