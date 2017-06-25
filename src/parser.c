@@ -236,6 +236,7 @@ void** parseIdentifier(char *str) {
     
     id = (char*) malloc((j - i + 1) * sizeof(char));
     strncpy(id, &str[i], j-i);
+    id[j-i] = '\0';
     
     int *pos = (int*) malloc(sizeof(int));
     *pos = j;
