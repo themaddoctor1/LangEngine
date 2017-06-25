@@ -357,8 +357,9 @@ void** parseSequence(char *str, BnfGrammar grammar, BnfStatement state) {
         } else if (type == BNF_TERMINATOR) {
             // The given string should have no more items to parse.
             int j = 0;
-            while (str[j] == ' ' || str[j] == '\t' || str[j] == '\n') i++;
-            if (str[i])
+            while (str[j] == ' ' || str[j] == '\t' || str[j] == '\n') j++;
+
+            if (str[j])
                 res = NULL;
             else {
                 // There is nothing left to parse
@@ -511,6 +512,29 @@ void** parseUnion(char *str, BnfGrammar grammar, BnfStatement *states) {
     return result;
 }
 
+void** parsePtrVar(char *str, BnfGrammar grammar, BnfVariable var, int type) {
+    BnfStatement values = var->values;
+    void **res = NULL;
+
+    res = parseSequence(str, grammar, ((BnfStatement*)values->args)[type]);
+
+    if (res) {
+        free(res[2]);
+
+        return res;
+    } else
+        return NULL;
+}
+
+/**
+ * Parses for an expression within a string. The expression may
+ * or may not use the entire input program.
+ *
+ * return - If successful, a pointer with the following contents:
+ *              result[0]: An Exp representing the parsed values.
+ *              result[1]: The length of the string used.
+ *          Otherwise, returns NULL.
+ */
 void** parseExpVar(char *str, BnfGrammar grammar, BnfVariable var, int type) {
     BnfStatement values = var->values;
     void **res = NULL;
@@ -519,7 +543,7 @@ void** parseExpVar(char *str, BnfGrammar grammar, BnfVariable var, int type) {
 
     if (res) {
         res[0] = buildExp(type, res[0]);
-
+        
         free(res[2]);
 
         return res;
@@ -528,6 +552,10 @@ void** parseExpVar(char *str, BnfGrammar grammar, BnfVariable var, int type) {
 
 }
 
+/**
+ * Given a potential program and a BNF grammar, creates a concrete
+ * syntax tree representing the program if one exists, else NULL.
+ */
 Exp parse(char* str, BnfGrammar grammar) {
     
     void **res = NULL;
@@ -535,9 +563,9 @@ Exp parse(char* str, BnfGrammar grammar) {
     for (i = 0; !res && ((void**) grammar->vars[0]->values->args)[i]; i++)
         res = grammar->vars[0]->parse(str, grammar, grammar->vars[0], i);
 
-    if (res)
-        return res[0];
-    else
+    if (res) {
+        return ((Exp*) res[0])[0];
+    } else
         return NULL;
 }
 

@@ -49,6 +49,7 @@ BnfVariable bnfVariable(int, BnfStatement, BnfParser);
 BnfGrammar bnfGrammar(BnfVariable*, BnfParser*, void (**disposers)(void*));
 BnfGrammar generateGrammar();
 
+void** parsePtrVar(char*, BnfGrammar, BnfVariable, int);
 void** parseExpVar(char*, BnfGrammar, BnfVariable, int);
 Exp parse(char*, BnfGrammar);
 
