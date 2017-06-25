@@ -485,11 +485,9 @@ void** parseUnion(char *str, BnfGrammar grammar, BnfStatement *states) {
     if (!res)
         return NULL;
 
-    void **result = (void**) malloc(3 * sizeof(void*));
+    void **result = (void**) malloc(2 * sizeof(void*));
     result[0] = res[0];
     result[1] = res[1];
-    result[2] = malloc(sizeof(int));
-    *((int*) result[2]) = i;
     free(res);
 
     return result;
@@ -502,8 +500,6 @@ void** parsePtrVar(char *str, BnfGrammar grammar, BnfVariable var, int type) {
     res = parseSequence(str, grammar, ((BnfStatement*)values->args)[type]);
 
     if (res) {
-        free(res[2]);
-
         return res;
     } else
         return NULL;
@@ -526,9 +522,6 @@ void** parseExpVar(char *str, BnfGrammar grammar, BnfVariable var, int type) {
 
     if (res) {
         res[0] = buildExp(type, res[0]);
-        
-        free(res[2]);
-
         return res;
     } else
         return NULL;
