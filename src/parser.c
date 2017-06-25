@@ -267,27 +267,15 @@ void** parseSequence(char *str, BnfGrammar grammar, BnfStatement state) {
         void **res;
 
         if (type == BNF_LITERAL) {
-            //printf("parseLiteral '%s' {\n", (char*) comps[i]->args);
             res = parseLiteral(str, (char*) comps[i]->args);
-            //if (res) printf("    found\n");
-            //printf("}\n");
             
         } else if (type == BNF_NUMBER) {
-            // Find a number, if possible.
-            //printf("parseNumber from '%s' {\n", str);
             res = parseNumber(str);
-            //if (res)
-            //    printf("    found %i\n", *((int*) res[0]));
-            //printf("}\n");
 
         } else if (type == BNF_IDENTIFIER) {
             // Find an identifier and its location.
-            //printf("parseIdentifier from '%s' {\n", str);
             res = parseIdentifier(str);
-            //if (res)
-                //printf("    found '%s'\n", (char*) res[0]);
-            //printf("}\n");
-            
+
         } else if (type == BNF_VARIABLE) {
             int varId = *((int*) comps[i]->args);
             BnfVariable var = grammar->vars[varId];
@@ -295,21 +283,16 @@ void** parseSequence(char *str, BnfGrammar grammar, BnfStatement state) {
             
             int j;
             for (j = 0; vuStates[j]; j++) {
-                //printf("parseVariable %i:%i {\n", varId, j);
-
                 // First, generate the result of the variable.
                 res = var->parse(str, grammar, var, j);
 
                 if (res) {
-                    //printf("    found %i:%i\n}\n", varId, j);
-
                     // Extract the result
                     void *varRes = res[0];
                     char *strn = &str[*((int*) res[1])];
                     free(res[1]);
                     free(res);
                     
-                    //printf("parseSubstatement %i from '%s'{\n", i+1, strn);
                     // Parse the rest of the statement, given the variable parsed correctly.
                     BnfStatement substate = bnfSeq2(&comps[i+1]);
                     void **strRes = parseSequence(strn, grammar, substate);
@@ -326,16 +309,11 @@ void** parseSequence(char *str, BnfGrammar grammar, BnfStatement state) {
                         free(strRes[1]);
                         free(strRes);
 
-                        //printf("# %p\n# %p\n# %p\n", (void*) strRes, (void*) res, res[0]);
-
                         for (k = 0; res[k]; k++)
                             enqueue(argList, res[k]);
                         
-                        //printf("    found %i values\n}\n", k+1);
-                        
                         break;
                     } else {
-                        //printf("    found nothing\n}\n");
                         // Garbage collection
                         grammar->disposers[varId](varRes);
                     }
