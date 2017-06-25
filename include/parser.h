@@ -1,7 +1,9 @@
 #ifndef _PARSER_H_
 #define _PARSER_H_
 
-#include "structures.h"
+#include "expressions.h"
+
+#include <stdarg.h>
 
 /**
  * Defines a BNF statement. Can consist of smaller BNF statements.
@@ -9,10 +11,24 @@
 struct bnf_statement;
 typedef struct bnf_statement* BnfStatement;
 
-#define BNF_UNION 0
-#define BNF_LITERAL 1
-#define BNF_IDENTIFIER 2
-#define BNF_VARIABLE 3
+#define BNF_UNION       0
+#define BNF_LITERAL     1
+#define BNF_NUMBER      2
+#define BNF_IDENTIFIER  3
+#define BNF_VARIABLE    4
+#define BNF_SEQUENCE    5
+#define BNF_ARBNO       6
+#define BNF_TERMINATOR  7
+
+BnfStatement bnfLit(char*);
+BnfStatement bnfNum();
+BnfStatement bnfId();
+BnfStatement bnfVar(int);
+BnfStatement bnfUnion(int num, ...);
+BnfStatement bnfSeq(int num, ...);
+BnfStatement bnfSeq2(BnfStatement*);
+BnfStatement bnfArb(BnfStatement, BnfStatement);
+BnfStatement bnfTrm();
 
 /**
  * Defines a BNF variable.
@@ -26,19 +42,14 @@ typedef struct bnf_variable* BnfVariable;
 struct bnf_grammar;
 typedef struct bnf_grammar* BnfGrammar;
 
-/**
- * Defines a parsing function type. Given a string,
- * a grammar, and a variable in the grammar that the
- * string should equal, attempt to build the syntax
- * tree for the string.
- *
- * return - A syntax tree if successful, otherwise NULL.
- */
-typedef Exp (*BnfParser)(char*, BnfGrammar, int);
+typedef void** (*BnfParser)(char*, BnfGrammar, BnfVariable, int);
 
-/**
- * Parses a string given a grammar and initial variable.
- */
-Exp parse(char*, BnfGrammar, int);
+BnfVariable bnfVariable(int, BnfStatement, BnfParser);
+
+BnfGrammar bnfGrammar(BnfVariable*, BnfParser*, void (**disposers)(void*));
+BnfGrammar generateGrammar();
+
+void** parseExpVar(char*, BnfGrammar, BnfVariable, int);
+Exp parse(char*, BnfGrammar);
 
 #endif
