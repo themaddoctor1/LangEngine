@@ -21,27 +21,25 @@ struct bnf_statement {
 struct bnf_variable {
     int name;
     BnfStatement values;
-    BnfParser parse;
+    BnfFilter filter;
+    void (*dispose)(void*);
 };
-BnfVariable bnfVariable(int name, BnfStatement states, BnfParser parse) {
+BnfVariable bnfVariable(int name, BnfStatement states, BnfFilter filter, void (*dispose)(void*)) {
     BnfVariable var = (BnfVariable) malloc(sizeof(struct bnf_variable));
     var->name = name;
     var->values = states;
-    var->parse = parse;
+    var->filter = filter;
+    var->dispose = dispose;
     return var;
 }
 
 struct bnf_grammar {
     BnfVariable *vars;
-    BnfParser *parsers;
-    void (**disposers)(void*);
 };
-BnfGrammar bnfGrammar(BnfVariable *vars, BnfParser *parsers, void (**disposers)(void*)) {
+BnfGrammar bnfGrammar(BnfVariable *vars) {
     BnfGrammar grammar = (BnfGrammar) malloc(sizeof(struct bnf_grammar));
     
     grammar->vars = vars;
-    grammar->parsers = parsers;
-    grammar->disposers = disposers;
 
     return grammar;
 }
@@ -147,7 +145,7 @@ void disposeBnfSequence(BnfGrammar grammar, BnfStatement state, LinkedList argLi
             void *val = dequeue(argList);
             free(val);
         } else if (type == BNF_VARIABLE)
-            grammar->disposers[*((int*) s->args)](dequeue(argList));
+            grammar->vars[*((int*) s->args)]->dispose(dequeue(argList));
         else if (type == BNF_ARBNO) {
             void **arbVals = dequeue(argList);
             // Dispose of each sequence's results
@@ -288,7 +286,7 @@ void** parseSequence(char *str, BnfGrammar grammar, BnfStatement state) {
             int j;
             for (j = 0; vuStates[j]; j++) {
                 // First, generate the result of the variable.
-                res = var->parse(str, grammar, var, j);
+                res = parseString(str, grammar, var, j);
 
                 if (res) {
                     // Extract the result
@@ -319,7 +317,7 @@ void** parseSequence(char *str, BnfGrammar grammar, BnfStatement state) {
                         break;
                     } else {
                         // Garbage collection
-                        grammar->disposers[varId](varRes);
+                        grammar->vars[varId]->dispose(varRes);
                     }
                 }
                 //else printf("    found nothing\n}\n");
@@ -493,18 +491,6 @@ void** parseUnion(char *str, BnfGrammar grammar, BnfStatement *states) {
     return result;
 }
 
-void** parsePtrVar(char *str, BnfGrammar grammar, BnfVariable var, int type) {
-    BnfStatement values = var->values;
-    void **res = NULL;
-
-    res = parseSequence(str, grammar, ((BnfStatement*)values->args)[type]);
-
-    if (res) {
-        return res;
-    } else
-        return NULL;
-}
-
 /**
  * Parses for an expression within a string. The expression may
  * or may not use the entire input program.
@@ -514,14 +500,15 @@ void** parsePtrVar(char *str, BnfGrammar grammar, BnfVariable var, int type) {
  *              result[1]: The length of the string used.
  *          Otherwise, returns NULL.
  */
-void** parseExpVar(char *str, BnfGrammar grammar, BnfVariable var, int type) {
+void** parseString(char *str, BnfGrammar grammar, BnfVariable var, int type) {
     BnfStatement values = var->values;
     void **res = NULL;
 
     res = parseSequence(str, grammar, ((BnfStatement*)values->args)[type]);
 
     if (res) {
-        res[0] = buildExp(type, res[0]);
+        if (var->filter)
+            res[0] = var->filter(type, res[0]);
         return res;
     } else
         return NULL;
@@ -537,7 +524,7 @@ Exp parse(char* str, BnfGrammar grammar) {
     void **res = NULL;
     int i;
     for (i = 0; !res && ((void**) grammar->vars[0]->values->args)[i]; i++)
-        res = grammar->vars[0]->parse(str, grammar, grammar->vars[0], i);
+        res = parseString(str, grammar, grammar->vars[0], i);
 
     if (res) {
         return ((Exp*) res[0])[0];

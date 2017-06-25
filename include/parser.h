@@ -43,14 +43,14 @@ struct bnf_grammar;
 typedef struct bnf_grammar* BnfGrammar;
 
 typedef void** (*BnfParser)(char*, BnfGrammar, BnfVariable, int);
+typedef void* (*BnfFilter)(int, void**);
 
-BnfVariable bnfVariable(int, BnfStatement, BnfParser);
+BnfVariable bnfVariable(int, BnfStatement, BnfFilter, void (*)(void*));
 
-BnfGrammar bnfGrammar(BnfVariable*, BnfParser*, void (**disposers)(void*));
+BnfGrammar bnfGrammar(BnfVariable*);
 BnfGrammar generateGrammar();
 
-void** parsePtrVar(char*, BnfGrammar, BnfVariable, int);
-void** parseExpVar(char*, BnfGrammar, BnfVariable, int);
+void** parseString(char*, BnfGrammar, BnfVariable, int);
 Exp parse(char*, BnfGrammar);
 
 #endif
