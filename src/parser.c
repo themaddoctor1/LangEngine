@@ -178,13 +178,17 @@ void** parseLiteral(char *str, char *lit) {
         // The string is present
         int p = (int) (pos - str);
 
-        // Ensure it's the first string
+        // Ensure it's the first string. It is if i == p
         int i;
         for (i = 0; i < p; i++)
             if (str[i] != ' ' && str[i] != '\n' && str[i] != '\t')
                 break;
+
+        // If it is a literal, ensure it is bounded by the target's length.
+        int j;
+        for (j = i; (str[j] >= 'a' && str[j] <= 'z') || (str[j] >= 'A' && str[j] <= 'Z'); j++);
         
-        if (i == p) {
+        if (i == p && j - i <= strlen(lit)) {
             // Build the result
             void **res = (void**) malloc(2 * sizeof(int));
             int *dist = (int*) malloc(sizeof(int));;
