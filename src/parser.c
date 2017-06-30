@@ -133,6 +133,70 @@ BnfStatement bnfArbno(BnfStatement statement, BnfStatement delim) {
     return state;
 }
 
+void printBnfGrammar(BnfGrammar grammar) {
+    BnfVariable *vars = grammar->vars;
+    
+    int i = 0;
+    for (i = 0; vars[i]; i++) {
+        BnfVariable var = vars[i];
+        BnfStatement *values = (BnfStatement*) var->values->args;
+        
+        printf("<%i> :=\n", i);
+
+        int j;
+        for (j = 0; values[j]; j++) {
+            printf("  %s ", j ? "|" : " ");
+            printBnfSequence(values[j]);
+            printf("\n");
+        }
+    }
+}
+
+void printBnfSequence(BnfStatement statement) {
+    BnfStatement *states = (BnfStatement*) statement->args;
+
+    int i, j;
+    for (i = 0; states[i]; i++) {
+        BnfStatement state = states[i];
+
+        switch (state->type) {
+            case BNF_UNION:
+                for (j = 0; ((BnfStatement*) state->args)[j]; j++) {
+                    if (j) printf(" | ");
+                    printBnfSequence(((BnfStatement*) state->args)[j]);
+                }
+                break;
+            case BNF_LITERAL:
+                printf(" '%s'", (char*) state->args);
+                break;
+            case BNF_NUMBER:
+                printf(" num");
+                break;
+            case BNF_IDENTIFIER:
+                printf(" id");
+                break;
+            case BNF_VARIABLE:
+                printf(" <%i>", *((int*) state->args));
+                break;
+            case BNF_SEQUENCE:
+                printBnfSequence(statement);
+                break;
+            case BNF_ARBNO:
+                printf("arbno(");
+                printBnfSequence(((BnfStatement*) state->args)[0]);
+                printf(" ,");
+                printBnfSequence(((BnfStatement*) state->args)[1]);
+                printf(" )");
+                break;
+            case BNF_TERMINATOR:
+                printf(" ;");
+                break;
+        }
+    }
+    
+    return;
+}
+
 void disposeBnfSequence(BnfGrammar grammar, BnfStatement state, LinkedList argList) {
     BnfStatement *comps = (BnfStatement*) state->args;
 
@@ -185,7 +249,7 @@ void** parseLiteral(char *str, char *lit) {
         // If it is a literal, ensure it is bounded by the target's length.
         int j;
         for (j = i; (str[j] >= 'a' && str[j] <= 'z') || (str[j] >= 'A' && str[j] <= 'Z'); j++);
-        
+
         if (i == p && j - i <= strlen(lit)) {
             // Build the result
             void **res = (void**) malloc(2 * sizeof(int));
@@ -199,28 +263,35 @@ void** parseLiteral(char *str, char *lit) {
 }
 
 void** parseNumber(char *str) {
-    int num;
-    if (sscanf(str, " %i", &num)) {
-
-        // Update the string and store the number
-        int i = 0;
-        while (str[i] == ' ' || str[i] == '\n' || str[i] == '\t')
+    int i = 0;
+    int num = 0, sgn = 1;
+    while (str[i] == ' ' || str[i] == '\n' || str[i] == '\t')
             i++;
+   
+    // Permit a negation
+    if (str[i] == '-') {
+        sgn *= -1;
+        i++;
+    }
+    
+    // The first string must be a number
+    if (str[i] < '0' || str[i] > '9')
+        return NULL;
 
-        if (str[i] == '-') i++;
-
-        while (str[i] >= '0' && str[i] <= '9')
-            i++;
-        
-        void **ptr = (void**) malloc(2 * sizeof(int));
-        ptr[0] = (void*) malloc(sizeof(int));
-        *((int*) ptr[0]) = num;
-        ptr[1] = (void*) malloc(sizeof(int));
-        *((int*) ptr[1]) = i;
-        
-        return ptr;
-        
-    } else return NULL;
+    // Compute the number
+    while (str[i] >= '0' && str[i] <= '9') {
+        num = 10 * num + str[i] - '0';
+        i++;
+    }
+    
+    // Build the result.
+    void **ptr = (void**) malloc(2 * sizeof(int));
+    ptr[0] = (void*) malloc(sizeof(int));
+    *((int*) ptr[0]) = num * sgn;
+    ptr[1] = (void*) malloc(sizeof(int));
+    *((int*) ptr[1]) = i;
+    
+    return ptr;
 }
 
 void** parseIdentifier(char *str) {
@@ -253,8 +324,6 @@ void** parseIdentifier(char *str) {
 void** parseSequence(char *str, BnfGrammar grammar, BnfStatement state) {
     char *strt = str;
     BnfStatement *comps = (BnfStatement*) state->args;
-
-    //printf("Seq: '%s'\n", str);
     
     // The arguments will be stored in a list so that when needed, they can
     // be extracted into an argument array or sequentially disposed of.
@@ -340,9 +409,10 @@ void** parseSequence(char *str, BnfGrammar grammar, BnfStatement state) {
             int j = 0;
             while (str[j] == ' ' || str[j] == '\t' || str[j] == '\n') j++;
 
-            if (str[j])
+            if (str[j]) {
+                err = 1;
                 res = NULL;
-            else {
+            } else {
                 // There is nothing left to parse
                 res= (void**) malloc(2 * sizeof(void**));
                 res[0] = NULL;
@@ -351,6 +421,7 @@ void** parseSequence(char *str, BnfGrammar grammar, BnfStatement state) {
             }
         } else {
             res = NULL;
+            err = 1;
         }
 
         if (res) {
@@ -502,14 +573,21 @@ void** parseUnion(char *str, BnfGrammar grammar, BnfStatement *states) {
  */
 void** parseString(char *str, BnfGrammar grammar, BnfVariable var, int type) {
     BnfStatement values = var->values;
+    BnfStatement state = ((BnfStatement*) values->args)[type];
     void **res = NULL;
 
-    res = parseSequence(str, grammar, ((BnfStatement*)values->args)[type]);
+    res = parseSequence(str, grammar, state);
 
     if (res) {
-        if (var->filter)
-            res[0] = var->filter(type, res[0]);
-        return res;
+        if (res[0]) {
+            if (var->filter)
+                res[0] = var->filter(type, res[0]);
+            return res;
+        } else {
+            free(res[1]);
+            free(res);
+            return NULL;
+        }
     } else
         return NULL;
 
@@ -527,7 +605,7 @@ Exp parse(char* str, BnfGrammar grammar) {
         res = parseString(str, grammar, grammar->vars[0], i);
 
     if (res) {
-        return ((Exp*) res[0])[0];
+        return ((Exp*) res)[0];
     } else
         return NULL;
 }

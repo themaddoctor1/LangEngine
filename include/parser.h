@@ -53,4 +53,8 @@ BnfGrammar generateGrammar();
 void** parseString(char*, BnfGrammar, BnfVariable, int);
 Exp parse(char*, BnfGrammar);
 
+void printBnfSequence(BnfStatement);
+void printBnfVariable(BnfVariable);
+void printBnfGrammar(BnfGrammar);
+
 #endif
