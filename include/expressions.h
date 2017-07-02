@@ -31,18 +31,18 @@ Exp newBlankExp(void*);
  * type - The type of expression represented
  * args - The arguments to be provided to the expression.
  */
-Exp buildExp(int type, void* args);
+Exp build_exp(int type, void* args);
 
 /**
  * Destructs a basic Exp structure.
  */
-void disposeExp(Exp);
+void dispose_exp(Exp);
 
 /**
  * Function that should be written to automatically run the
  * correct destructor for the given Exp.
  */
-void autoDisposeExp(Exp);
+void basedispose_exp(Exp);
 
 /**
  * Defines a type that evaluates an expression.

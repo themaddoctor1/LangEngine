@@ -9,14 +9,14 @@ Exp newBlankExp(void* args) {
     return exp;
 }
 
-Exp buildExp(int type, void* args) {
+Exp build_exp(int type, void* args) {
     Exp exp = (Exp) malloc(sizeof(struct expression));
     exp->args = args;
     exp->type = type;
     return exp;
 }
 
-void disposeExp(Exp exp) {
+void basedispose_exp(Exp exp) {
     free(exp->args);
     free(exp);
 }

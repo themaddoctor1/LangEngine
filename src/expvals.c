@@ -18,7 +18,7 @@ ExpVal evaluate(char *prog, BnfGrammar grammar) {
         return NULL;
     else {
         ExpVal val = value_of(exp, init_env());
-        autoDisposeExp(exp);
+        dispose_exp(exp);
         return val;
     }
 
