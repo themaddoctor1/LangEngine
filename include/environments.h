@@ -5,6 +5,11 @@
 
 Env buildEnv(int, void*, Env);
 
+/**
+ * Creates the default environment.
+ */
+Env init_env();
+
 void disposeEnv(Env);
 
 /**
