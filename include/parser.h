@@ -45,7 +45,14 @@ typedef struct bnf_grammar* BnfGrammar;
 typedef void** (*BnfParser)(char*, BnfGrammar, BnfVariable, int);
 typedef void* (*BnfFilter)(int, void**);
 
-BnfVariable bnfVariable(int, BnfStatement, BnfFilter, void (*)(void*));
+/**
+ * Creates a BNF variable.
+ *
+ * precondition - The BnfStatement is a union statement.
+ *                The disposer will completely dispose of any value that is
+ *                  returned by the BnfFilter parameter.
+ */
+BnfVariable bnfVariable(int, BnfStatement, BnfFilter, void (*disposer)(void*));
 
 BnfGrammar bnfGrammar(BnfVariable*);
 BnfGrammar generateGrammar();
