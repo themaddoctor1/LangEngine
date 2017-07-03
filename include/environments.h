@@ -10,7 +10,7 @@ Env buildEnv(int, void*, Env);
  */
 Env init_env();
 
-void disposeEnv(Env);
+void dispose_env(Env);
 
 /**
  * A type that represent functions that

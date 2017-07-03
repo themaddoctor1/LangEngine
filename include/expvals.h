@@ -4,9 +4,9 @@
 #include "structures.h"
 #include "parser.h"
 
-ExpVal buildExpVal(int, void*);
-void disposeExpVal(ExpVal);
-ExpVal cloneExpVal(ExpVal);
+ExpVal build_expval(int, void*);
+void dispose_expval(ExpVal);
+ExpVal clone_expval(ExpVal);
 
 ExpVal evaluate(char*, BnfGrammar);
 
