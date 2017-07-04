@@ -1,6 +1,7 @@
 #include "expvals.h"
 
 #include "environments.h"
+#include "parser.h"
 
 #include <stdlib.h>
 
@@ -11,9 +12,9 @@ ExpVal build_expval(int type, void *val) {
     return expval;
 }
 
-ExpVal evaluate(char *prog, BnfGrammar grammar) {
+ExpVal evaluate(char *prog) {
     
-    Exp exp = parse(prog, grammar);
+    Exp exp = parse(prog);
     if (!exp)
         return NULL;
     else {

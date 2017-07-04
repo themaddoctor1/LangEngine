@@ -8,11 +8,13 @@
 
 #include <stdio.h>
 
-void** parseArbno(char*, BnfGrammar, BnfStatement elem, BnfStatement delim);
+BnfGrammar grammar = NULL;
+
+void** parseArbno(char*, BnfStatement elem, BnfStatement delim);
 void** parseIdentifier(char*);
 void** parseLiteral(char*, char*);
-void** parseSequence(char*, BnfGrammar, BnfStatement);
-void** parseUnion(char*, BnfGrammar, BnfStatement*);
+void** parseSequence(char*, BnfStatement);
+void** parseUnion(char*, BnfStatement*);
 
 struct bnf_statement {
     int type;
@@ -134,7 +136,7 @@ BnfStatement bnfArbno(BnfStatement statement, BnfStatement delim) {
     return state;
 }
 
-void disposeBnfSequence(BnfGrammar grammar, BnfStatement state, LinkedList argList) {
+void disposeBnfSequence(BnfStatement state, LinkedList argList) {
     BnfStatement *comps = (BnfStatement*) state->args;
 
     int i;
@@ -152,13 +154,13 @@ void disposeBnfSequence(BnfGrammar grammar, BnfStatement state, LinkedList argLi
             // Dispose of each sequence's results
             int j;
             for (j = 0; arbVals[j]; j++) {
-                disposeBnfSequence(grammar, s->args, buildLinkedList(arbVals[j]));
+                disposeBnfSequence(s->args, buildLinkedList(arbVals[j]));
                 free(arbVals[j]);
             }
             free(arbVals);
         } else if (type == BNF_SEQUENCE) {
             void *seqArgs = dequeue(argList);
-            disposeBnfSequence(grammar, s, buildLinkedList(s->args));
+            disposeBnfSequence(s, buildLinkedList(s->args));
             free(seqArgs);
         }
     }
@@ -258,7 +260,7 @@ void** parseIdentifier(char *str) {
     return res;
 }
 
-void** parseSequence(char *str, BnfGrammar grammar, BnfStatement state) {
+void** parseSequence(char *str, BnfStatement state) {
     char *strt = str;
     BnfStatement *comps = (BnfStatement*) state->args;
     
@@ -292,7 +294,7 @@ void** parseSequence(char *str, BnfGrammar grammar, BnfStatement state) {
             int j;
             for (j = 0; vuStates[j]; j++) {
                 // First, generate the result of the variable.
-                res = parseString(str, grammar, var, j);
+                res = parseString(str, var, j);
 
                 if (res) {
                     // Extract the result
@@ -303,7 +305,7 @@ void** parseSequence(char *str, BnfGrammar grammar, BnfStatement state) {
                     
                     // Parse the rest of the statement, given the variable parsed correctly.
                     BnfStatement substate = bnfSeq2(&comps[i+1]);
-                    void **strRes = parseSequence(strn, grammar, substate);
+                    void **strRes = parseSequence(strn, substate);
                     free(substate);
 
                     if (strRes) {
@@ -340,7 +342,7 @@ void** parseSequence(char *str, BnfGrammar grammar, BnfStatement state) {
 
         } else if (type == BNF_ARBNO) {
             // Parse a collection of items
-            res = parseArbno(str, grammar, ((BnfStatement*) comps[i]->args)[0], ((BnfStatement*) comps[i]->args)[1]);
+            res = parseArbno(str, ((BnfStatement*) comps[i]->args)[0], ((BnfStatement*) comps[i]->args)[1]);
         } else if (type == BNF_TERMINATOR) {
             // The given string should have no more items to parse.
             int j = 0;
@@ -381,7 +383,7 @@ void** parseSequence(char *str, BnfGrammar grammar, BnfStatement state) {
 
     if (comps[i] || err) {
         // Clean the argument list
-        disposeBnfSequence(grammar, state, argList);
+        disposeBnfSequence(state, argList);
         return NULL;
     }
     enqueue(argList, NULL);
@@ -415,7 +417,7 @@ void** parseSequence(char *str, BnfGrammar grammar, BnfStatement state) {
  *
  * note: delim MUST be a literal, or NULL if no delimiter is to be used.
  */
-void** parseArbno(char *str, BnfGrammar grammar, BnfStatement elem, BnfStatement delim) {
+void** parseArbno(char *str, BnfStatement elem, BnfStatement delim) {
     char *strt = str;
     LinkedList vals = makeLinkedList();
     
@@ -440,14 +442,14 @@ void** parseArbno(char *str, BnfGrammar grammar, BnfStatement elem, BnfStatement
             }
         }
 
-        res = parseSequence(str, grammar, elem);
+        res = parseSequence(str, elem);
 
         if (!res) {
             // No more statements were found.
             if (delim) {
                 // Dispose of the previously determined values.
                 while (sizeOfLinkedList(vals))
-                    disposeBnfSequence(grammar, elem, dequeue(vals));
+                    disposeBnfSequence(elem, dequeue(vals));
                 return NULL;
             } else break;
         }
@@ -480,13 +482,13 @@ void** parseArbno(char *str, BnfGrammar grammar, BnfStatement elem, BnfStatement
 
 }
 
-void** parseUnion(char *str, BnfGrammar grammar, BnfStatement *states) {
+void** parseUnion(char *str, BnfStatement *states) {
     
     void **res = NULL;
 
     int i;
     for (i = 0; states[i] && !res; i++)
-        res = parseSequence(str, grammar, states[i]);
+        res = parseSequence(str, states[i]);
     
     if (!res)
         return NULL;
@@ -508,12 +510,12 @@ void** parseUnion(char *str, BnfGrammar grammar, BnfStatement *states) {
  *              result[1]: The length of the string used.
  *          Otherwise, returns NULL.
  */
-void** parseString(char *str, BnfGrammar grammar, BnfVariable var, int type) {
+void** parseString(char *str, BnfVariable var, int type) {
     BnfStatement values = var->values;
     BnfStatement state = ((BnfStatement*) values->args)[type];
     void **res = NULL;
 
-    res = parseSequence(str, grammar, state);
+    res = parseSequence(str, state);
 
     if (res) {
         if (res[0]) {
@@ -534,12 +536,15 @@ void** parseString(char *str, BnfGrammar grammar, BnfVariable var, int type) {
  * Given a potential program and a BNF grammar, creates a concrete
  * syntax tree representing the program if one exists, else NULL.
  */
-Exp parse(char* str, BnfGrammar grammar) {
+Exp parse(char* str) {
+
+    if (!grammar)
+        grammar = generateGrammar();
     
     void **res = NULL;
     int i;
     for (i = 0; !res && ((void**) grammar->vars[0]->values->args)[i]; i++)
-        res = parseString(str, grammar, grammar->vars[0], i);
+        res = parseString(str, grammar->vars[0], i);
 
     if (res) {
         return ((Exp*) res)[0];

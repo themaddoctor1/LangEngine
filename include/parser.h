@@ -42,7 +42,7 @@ typedef struct bnf_variable* BnfVariable;
 struct bnf_grammar;
 typedef struct bnf_grammar* BnfGrammar;
 
-typedef void** (*BnfParser)(char*, BnfGrammar, BnfVariable, int);
+typedef void** (*BnfParser)(char*, BnfVariable, int);
 typedef void* (*BnfFilter)(int, void**);
 
 /**
@@ -57,7 +57,7 @@ BnfVariable bnfVariable(int, BnfStatement, BnfFilter, void (*disposer)(void*));
 BnfGrammar bnfGrammar(BnfVariable*);
 BnfGrammar generateGrammar();
 
-void** parseString(char*, BnfGrammar, BnfVariable, int);
-Exp parse(char*, BnfGrammar);
+void** parseString(char*, BnfVariable, int);
+Exp parse(char*);
 
 #endif

@@ -8,6 +8,9 @@ ExpVal build_expval(int, void*);
 void dispose_expval(ExpVal);
 ExpVal clone_expval(ExpVal);
 
-ExpVal evaluate(char*, BnfGrammar);
+/**
+ * Evaluates an expression.
+ */
+ExpVal evaluate(char*);
 
 #endif
