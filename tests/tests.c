@@ -3,8 +3,16 @@
 
 #include "expression_tests.h"
 
+#include "parser.h"
+
 /* Collection of test scripts */
 int (**tests)() = NULL;
+
+// Suppress warnings from implementation-dependent functions
+BnfGrammar generate_bnf_grammar() {return NULL;}
+Env init_env() {return NULL;}
+ExpVal value_of(Exp exp, Env env) {return NULL;}
+void dispose_exp(Exp exp) {}
 
 void initTests() {
     tests = (int (**)()) malloc(4 * sizeof(int (*)()));

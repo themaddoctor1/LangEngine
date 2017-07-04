@@ -7,9 +7,9 @@
 /**
  * Pretty printers for evaluation structures.
  */
-void printExp(Exp);
-void printEnv(Env);
-void printExpVal(ExpVal);
+void print_exp(Exp);
+void print_env(Env);
+void print_expval(ExpVal);
 
 /**
  * Pretty printers for the BNF data.

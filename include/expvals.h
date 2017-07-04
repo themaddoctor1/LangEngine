@@ -2,7 +2,6 @@
 #define _EXPVALS_H_
 
 #include "structures.h"
-#include "parser.h"
 
 ExpVal build_expval(int, void*);
 void dispose_expval(ExpVal);

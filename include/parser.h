@@ -55,7 +55,7 @@ typedef void* (*BnfFilter)(int, void**);
 BnfVariable bnfVariable(int, BnfStatement, BnfFilter, void (*disposer)(void*));
 
 BnfGrammar bnfGrammar(BnfVariable*);
-BnfGrammar generateGrammar();
+BnfGrammar generate_bnf_grammar();
 
 void** parseString(char*, BnfVariable, int);
 Exp parse(char*);

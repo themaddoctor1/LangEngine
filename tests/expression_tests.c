@@ -10,10 +10,10 @@ int test_constructor1() {
 
     Exp exp;
 
-    printf("TEST: newBlankExp(void*)\n");
+    printf("TEST: new_blank_exp(void*)\n");
     
     printf("Creating blank Exp with non-null argument...\n");
-    exp = newBlankExp((void*) 64);
+    exp = new_blank_exp((void*) 64);
     if (!exp) {
         printf("Failed to create Exp!\n");
         return 1;
@@ -25,7 +25,7 @@ int test_constructor1() {
     }
 
     printf("Creating blank Exp with null argument...\n");
-    exp = newBlankExp(NULL);
+    exp = new_blank_exp(NULL);
     if (!exp) {
         printf("Failed to create Exp!\n");
         return 1;
@@ -45,10 +45,10 @@ int test_constructor2() {
 
     Exp exp;
 
-    printf("TEST: buildExp(int, void*)\n");
+    printf("TEST: build_exp(int, void*)\n");
     
     printf("Building Exp with non-null argument...\n");
-    exp = buildExp(3, (void*) 64);
+    exp = build_exp(3, (void*) 64);
     if (!exp) {
         printf("Failed to create Exp!\n");
         return 1;
@@ -60,7 +60,7 @@ int test_constructor2() {
     }
 
     printf("Building Exp with null argument...\n");
-    exp = buildExp(0, NULL);
+    exp = build_exp(0, NULL);
     if (!exp) {
         printf("Failed to create Exp!\n");
         return 1;
@@ -78,10 +78,10 @@ int test_constructor2() {
 int test_destructor() {
     Exp exp;
     
-    printf("TEST: disposeExp(Exp)\n");
-    exp = buildExp(7, malloc(sizeof(char)));
+    printf("TEST: dispose_exp(Exp)\n");
+    exp = build_exp(7, malloc(sizeof(char)));
 
-    disposeExp(exp);
+    dispose_exp(exp);
 
     return 0;
 }

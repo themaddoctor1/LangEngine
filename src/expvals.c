@@ -1,6 +1,7 @@
 #include "expvals.h"
 
 #include "environments.h"
+#include "expressions.h"
 #include "parser.h"
 
 #include <stdlib.h>

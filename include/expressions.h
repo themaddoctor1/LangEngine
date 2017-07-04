@@ -23,7 +23,7 @@ typedef void (*ExpDestructor)(Exp);
  *
  * note: type should be defined by the user.
  */
-Exp newBlankExp(void*);
+Exp new_blank_exp(void*);
 
 /**
  * Full constructor that creates an expression.
@@ -42,7 +42,7 @@ void dispose_exp(Exp);
  * Function that should be written to automatically run the
  * correct destructor for the given Exp.
  */
-void basedispose_exp(Exp);
+void base_dispose_exp(Exp);
 
 /**
  * Defines a type that evaluates an expression.

@@ -3,7 +3,7 @@
 
 #include "structures.h"
 
-Env buildEnv(int, void*, Env);
+Env build_env(int, void*, Env);
 
 /**
  * Creates the default environment.

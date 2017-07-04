@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-Exp newBlankExp(void* args) {
+Exp new_blank_exp(void* args) {
     Exp exp = (Exp) malloc(sizeof(struct expression));
     exp->args = args;
     return exp;
@@ -16,7 +16,7 @@ Exp build_exp(int type, void* args) {
     return exp;
 }
 
-void basedispose_exp(Exp exp) {
+void base_dispose_exp(Exp exp) {
     free(exp->args);
     free(exp);
 }

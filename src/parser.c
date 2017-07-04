@@ -548,7 +548,7 @@ void** parseString(char *str, BnfVariable var, int type) {
 Exp parse(char* str) {
 
     if (!grammar)
-        grammar = generateGrammar();
+        grammar = generate_bnf_grammar();
     
     void **res = NULL;
     int i;
