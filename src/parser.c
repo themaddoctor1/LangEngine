@@ -1,5 +1,6 @@
 #include "parser.h"
 
+#include "langio.h"
 #include "linkedlist.h"
 
 #include <stdlib.h>
@@ -131,70 +132,6 @@ BnfStatement bnfArbno(BnfStatement statement, BnfStatement delim) {
     ((BnfStatement*) state->args)[1] = delim;
 
     return state;
-}
-
-void printBnfGrammar(BnfGrammar grammar) {
-    BnfVariable *vars = grammar->vars;
-    
-    int i = 0;
-    for (i = 0; vars[i]; i++) {
-        BnfVariable var = vars[i];
-        BnfStatement *values = (BnfStatement*) var->values->args;
-        
-        printf("<%i> :=\n", i);
-
-        int j;
-        for (j = 0; values[j]; j++) {
-            printf("  %s ", j ? "|" : " ");
-            printBnfSequence(values[j]);
-            printf("\n");
-        }
-    }
-}
-
-void printBnfSequence(BnfStatement statement) {
-    BnfStatement *states = (BnfStatement*) statement->args;
-
-    int i, j;
-    for (i = 0; states[i]; i++) {
-        BnfStatement state = states[i];
-
-        switch (state->type) {
-            case BNF_UNION:
-                for (j = 0; ((BnfStatement*) state->args)[j]; j++) {
-                    if (j) printf(" | ");
-                    printBnfSequence(((BnfStatement*) state->args)[j]);
-                }
-                break;
-            case BNF_LITERAL:
-                printf(" '%s'", (char*) state->args);
-                break;
-            case BNF_NUMBER:
-                printf(" num");
-                break;
-            case BNF_IDENTIFIER:
-                printf(" id");
-                break;
-            case BNF_VARIABLE:
-                printf(" <%i>", *((int*) state->args));
-                break;
-            case BNF_SEQUENCE:
-                printBnfSequence(statement);
-                break;
-            case BNF_ARBNO:
-                printf("arbno(");
-                printBnfSequence(((BnfStatement*) state->args)[0]);
-                printf(" ,");
-                printBnfSequence(((BnfStatement*) state->args)[1]);
-                printf(" )");
-                break;
-            case BNF_TERMINATOR:
-                printf(" ;");
-                break;
-        }
-    }
-    
-    return;
 }
 
 void disposeBnfSequence(BnfGrammar grammar, BnfStatement state, LinkedList argList) {
@@ -609,4 +546,69 @@ Exp parse(char* str, BnfGrammar grammar) {
     } else
         return NULL;
 }
+
+void printBnfGrammar(BnfGrammar grammar) {
+    BnfVariable *vars = grammar->vars;
+    
+    int i = 0;
+    for (i = 0; vars[i]; i++) {
+        BnfVariable var = vars[i];
+        BnfStatement *values = (BnfStatement*) var->values->args;
+        
+        printf("<%i> :=\n", i);
+
+        int j;
+        for (j = 0; values[j]; j++) {
+            printf("  %s ", j ? "|" : " ");
+            printBnfSequence(values[j]);
+            printf("\n");
+        }
+    }
+}
+
+void printBnfSequence(BnfStatement statement) {
+    BnfStatement *states = (BnfStatement*) statement->args;
+
+    int i, j;
+    for (i = 0; states[i]; i++) {
+        BnfStatement state = states[i];
+
+        switch (state->type) {
+            case BNF_UNION:
+                for (j = 0; ((BnfStatement*) state->args)[j]; j++) {
+                    if (j) printf(" | ");
+                    printBnfSequence(((BnfStatement*) state->args)[j]);
+                }
+                break;
+            case BNF_LITERAL:
+                printf(" '%s'", (char*) state->args);
+                break;
+            case BNF_NUMBER:
+                printf(" num");
+                break;
+            case BNF_IDENTIFIER:
+                printf(" id");
+                break;
+            case BNF_VARIABLE:
+                printf(" <%i>", *((int*) state->args));
+                break;
+            case BNF_SEQUENCE:
+                printBnfSequence(statement);
+                break;
+            case BNF_ARBNO:
+                printf("arbno(");
+                printBnfSequence(((BnfStatement*) state->args)[0]);
+                printf(" ,");
+                printBnfSequence(((BnfStatement*) state->args)[1]);
+                printf(" )");
+                break;
+            case BNF_TERMINATOR:
+                printf(" ;");
+                break;
+        }
+    }
+    
+    return;
+}
+
 
