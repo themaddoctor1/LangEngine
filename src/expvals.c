@@ -16,10 +16,15 @@ ExpVal evaluate(char *prog) {
     
     Exp exp = parse(prog);
     if (!exp)
+        // If the expression fails to parse, it should trivially
+        // fail to evaluate.
         return NULL;
     else {
         ExpVal val = value_of(exp, init_env());
+
+        // Garbage collection
         dispose_exp(exp);
+
         return val;
     }
 

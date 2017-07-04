@@ -17,6 +17,9 @@ struct linkedlist {
     long size;
 };
 
+/**
+ * Creates a node for use in a linked list.
+ */
 LLnode makeLLnode(LLnode prev, void *item, LLnode next) {
     LLnode node = (LLnode) malloc(sizeof(struct linkedlist));
     node->prev = prev;
@@ -38,8 +41,11 @@ void* disposeLLnode(LLnode node) {
 
 LinkedList makeLinkedList() {
     LinkedList list = (LinkedList) malloc(sizeof(struct linkedlist));
+
+    // Initial conditions
     list->head = list->tail = NULL;
     list->size = 0;
+
     return list;
 }
 
@@ -53,6 +59,7 @@ LinkedList buildLinkedList(void **items) {
 }
 
 void disposeLinkedList(LinkedList ll) {
+    // Remove everything, then free the pointer (pop frees nodes).
     while (ll->head)
         pop(ll);
 
@@ -60,15 +67,21 @@ void disposeLinkedList(LinkedList ll) {
 }
 
 void push(LinkedList ll, void *item) {
+    // NULL check.
+    if (!ll) return;
+
     ll->head = makeLLnode(NULL, item, ll->head);
     if (!ll->tail)
+        // List is empty, node is new front.
         ll->tail = ll->head;
 
     ll->size++;
 }
 
+
 void* pop(LinkedList ll) {
-    if (!ll->head)
+    // Empty case.
+    if (!ll || !ll->head)
         return NULL;
 
     LLnode head = ll->head;
@@ -87,37 +100,49 @@ void* pop(LinkedList ll) {
 }
 
 void insertToLL(LinkedList ll, void *item, int idx) {
-    if (!idx) {
+    if (!ll) return;
+
+    if (idx <= 0) {
+        // Insertion at index 0
         push(ll, item);
         return;
     } else if (idx >= ll->size) {
+        // Insertion at end of list.
         enqueue(ll, item);
         return;
     }
-
+    
+    // Get node at idx
     LLnode curr = ll->head;
     while (curr && --idx)
         curr = curr->next;
-
+    
+    // Build the node.
     LLnode node = makeLLnode(curr, item, curr->next);
 
     /* Relink */
     if (curr->next)
         curr->next->prev = node;
     curr->next = node;
-
+    
+    // Increment list size.
     ll->size++;
 }
 
 void *removeFromLL(LinkedList ll, int idx) {
-    if (!idx)
+    if (!ll) return NULL;
+    
+    if (idx <= 0)
+        // Remove front of list.
         return pop(ll);
 
     LLnode curr = ll->head;
     
     if (!curr)
+        // Empty case
         return NULL;
-
+    
+    // Seek node at idx.
     while (curr->next && idx--)
         curr = curr->next;
     
@@ -133,18 +158,26 @@ void *removeFromLL(LinkedList ll, int idx) {
 }
 
 void enqueue(LinkedList ll, void *item) {
+    if (!ll) return;
+    
+    // Build node
     LLnode node = makeLLnode(ll->tail, item, NULL);
     
+    // Apply new tail
     ll->tail = node;
+
     if (ll->head)
+        // List is non-empty, apply linking.
         node->prev->next = node;
     else
+        // List is empty
         ll->head = ll->tail;
 
     ll->size++;
 }
 
 void* dequeue(LinkedList ll) {
+    // In this structure, dequeue is identical to pop.
     return pop(ll);
 }
 

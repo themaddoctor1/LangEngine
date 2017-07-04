@@ -137,19 +137,24 @@ BnfStatement bnfArbno(BnfStatement statement, BnfStatement delim) {
 }
 
 void disposeBnfSequence(BnfStatement state, LinkedList argList) {
+    // The set of components of the statement.
     BnfStatement *comps = (BnfStatement*) state->args;
 
     int i;
     for(i = 0; sizeOfLinkedList(argList); i++) {
+        // Get the current component and its type
         BnfStatement s = comps[i];
         int type = s->type;
         
         if (type == BNF_NUMBER || type == BNF_IDENTIFIER) {
+            // Type is simply a single pointer that can be removed and freed.
             void *val = dequeue(argList);
             free(val);
-        } else if (type == BNF_VARIABLE)
-            grammar->vars[*((int*) s->args)]->dispose(dequeue(argList));
-        else if (type == BNF_ARBNO) {
+        } else if (type == BNF_VARIABLE) {
+            // Dispose of the variable outcome using the given destructor.
+            BnfVariable v = grammar->vars[*((int*) s->args)];
+            v->dispose(dequeue(argList));
+        } else if (type == BNF_ARBNO) {
             void **arbVals = dequeue(argList);
             // Dispose of each sequence's results
             int j;
@@ -246,13 +251,16 @@ void** parseIdentifier(char *str) {
     if (i == j)
         return NULL;
     
+    // Make a copy of the identifier for future use.
     id = (char*) malloc((j - i + 1) * sizeof(char));
     strncpy(id, &str[i], j-i);
     id[j-i] = '\0';
     
+    // Store the id position in the string.
     int *pos = (int*) malloc(sizeof(int));
     *pos = j;
-
+    
+    // Build the bundle.
     void **res = (void**) malloc(2 * sizeof(void*));
     res[0] = id;
     res[1] = pos;
@@ -272,8 +280,11 @@ void** parseSequence(char *str, BnfStatement state) {
     // Iterate through all of the substatements
     int i;
     for (i = 0; comps[i]; i++) {
-
+        
+        // The type of expression
         int type = comps[i]->type;
+
+        // Will hold the correct bundle after the if chain.
         void **res;
 
         if (type == BNF_LITERAL) {
@@ -314,11 +325,13 @@ void** parseSequence(char *str, BnfStatement state) {
                         enqueue(argList, varRes);
                         str = &strn[*((int*) strRes[1])];
                         
+                        // The values to add to handle.
                         res = strRes[0];
                         
                         free(strRes[1]);
                         free(strRes);
-
+                        
+                        // Add the tail end of the chain.
                         for (k = 0; res[k]; k++)
                             enqueue(argList, res[k]);
                         
@@ -401,7 +414,6 @@ void** parseSequence(char *str, BnfStatement state) {
         if (!tmp)
             break;
     }
-    //printf("inserted %i\n", j);
     
     disposeLinkedList(argList);
     
@@ -485,20 +497,13 @@ void** parseArbno(char *str, BnfStatement elem, BnfStatement delim) {
 void** parseUnion(char *str, BnfStatement *states) {
     
     void **res = NULL;
-
+    
+    // Find an outcome that works.
     int i;
     for (i = 0; states[i] && !res; i++)
         res = parseSequence(str, states[i]);
     
-    if (!res)
-        return NULL;
-
-    void **result = (void**) malloc(2 * sizeof(void*));
-    result[0] = res[0];
-    result[1] = res[1];
-    free(res);
-
-    return result;
+    return res;
 }
 
 /**
@@ -518,16 +523,20 @@ void** parseString(char *str, BnfVariable var, int type) {
     res = parseSequence(str, state);
 
     if (res) {
+        // Something was returned, see if it can be filtered.
         if (res[0]) {
+            // Filter if requested, then return.
             if (var->filter)
                 res[0] = var->filter(type, res[0]);
             return res;
         } else {
+            // Dispose of the result; it is invalid.
             free(res[1]);
             free(res);
             return NULL;
         }
     } else
+        // Nothing came back; indicate that fact.
         return NULL;
 
 }
