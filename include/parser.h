@@ -56,6 +56,7 @@ BnfVariable bnfVariable(int, BnfStatement, BnfFilter, void (*disposer)(void*));
 
 BnfGrammar bnfGrammar(BnfVariable*);
 BnfGrammar generate_bnf_grammar();
+void init_bnf_grammar(int verbose);
 
 void** parseString(char*, BnfVariable, int);
 Exp parse(char*);

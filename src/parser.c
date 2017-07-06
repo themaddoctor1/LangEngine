@@ -10,6 +10,18 @@
 
 BnfGrammar grammar = NULL;
 
+void init_bnf_grammar(int verbose) {
+    if (grammar)
+        return;
+
+    grammar = generate_bnf_grammar();
+
+    if (verbose) {
+        printf("BNF Grammar:\n");
+        printBnfGrammar(grammar);
+    }
+}
+
 void** parseArbno(char*, BnfStatement elem, BnfStatement delim);
 void** parseIdentifier(char*);
 void** parseLiteral(char*, char*);
@@ -563,7 +575,7 @@ Exp parse(char* str) {
 
 void printBnfGrammar(BnfGrammar grammar) {
     BnfVariable *vars = grammar->vars;
-    
+
     int i = 0;
     for (i = 0; vars[i]; i++) {
         BnfVariable var = vars[i];
