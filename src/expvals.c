@@ -21,10 +21,12 @@ ExpVal evaluate(char *prog) {
         // fail to evaluate.
         return NULL;
     else {
-        ExpVal val = value_of(exp, init_env());
+        Env env = init_env();
+        ExpVal val = value_of(exp, env);
 
         // Garbage collection
         dispose_exp(exp);
+        dispose_env(env);
 
         return val;
     }
