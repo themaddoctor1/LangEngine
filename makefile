@@ -3,7 +3,7 @@ LANG=testlang
 
 CC = gcc
 
-CFLAGS = -Wall -Werror --pedantic -I./include/ -I./tests/ -I./$(LANG)_files/ -lm -g
+CFLAGS = -Wall -Werror --pedantic -I./include/ -I./tests/ -O3
 
 MAIN_SRCS=$(wildcard ./src/*.c)
 
