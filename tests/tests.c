@@ -3,6 +3,7 @@
 
 #include "expression_tests.h"
 
+#include "bnf_parser.h"
 #include "parser.h"
 
 /* Collection of test scripts */
@@ -13,6 +14,8 @@ BnfGrammar generate_bnf_grammar() {return NULL;}
 Env init_env() {return NULL;}
 ExpVal value_of(Exp exp, Env env) {return NULL;}
 void dispose_exp(Exp exp) {}
+void dispose_env(Env env) {}
+Exp parse(char *str) { return NULL; }
 
 void initTests() {
     tests = (int (**)()) malloc(4 * sizeof(int (*)()));
