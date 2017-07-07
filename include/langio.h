@@ -2,7 +2,7 @@
 #define _LANGIO_H_
 
 #include "structures.h"
-#include "parser.h"
+#include "bnf_parser.h"
 
 /**
  * Pretty printers for evaluation structures.

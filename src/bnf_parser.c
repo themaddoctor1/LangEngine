@@ -1,4 +1,4 @@
-#include "parser.h"
+#include "bnf_parser.h"
 
 #include "langio.h"
 #include "linkedlist.h"
@@ -317,7 +317,7 @@ void** parseSequence(char *str, BnfStatement state) {
             int j;
             for (j = 0; vuStates[j]; j++) {
                 // First, generate the result of the variable.
-                res = parseString(str, var, j);
+                res = parse_bnfstring(str, var, j);
 
                 if (res) {
                     // Extract the result
@@ -527,7 +527,7 @@ void** parseUnion(char *str, BnfStatement *states) {
  *              result[1]: The length of the string used.
  *          Otherwise, returns NULL.
  */
-void** parseString(char *str, BnfVariable var, int type) {
+void** parse_bnfstring(char *str, BnfVariable var, int type) {
     BnfStatement values = var->values;
     BnfStatement state = ((BnfStatement*) values->args)[type];
     void **res = NULL;
@@ -557,7 +557,7 @@ void** parseString(char *str, BnfVariable var, int type) {
  * Given a potential program and a BNF grammar, creates a concrete
  * syntax tree representing the program if one exists, else NULL.
  */
-Exp parse(char* str) {
+Exp parse_bnf(char* str) {
 
     if (!grammar)
         grammar = generate_bnf_grammar();
@@ -565,7 +565,7 @@ Exp parse(char* str) {
     void **res = NULL;
     int i;
     for (i = 0; !res && ((void**) grammar->vars[0]->values->args)[i]; i++)
-        res = parseString(str, grammar->vars[0], i);
+        res = parse_bnfstring(str, grammar->vars[0], i);
 
     if (res) {
         return ((Exp*) res)[0];
