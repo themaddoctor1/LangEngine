@@ -134,6 +134,24 @@ The parser uses three main structure types to evaluate programs. These are:
 
 The implementation of these types allows the evaluator to determine the value of a program.
 
+## Samples
+
+This repository includes sample code that demonstrates usage of the language engine. Any languages that are created will be described here.
+
+### SimpleLang
+
+SimpleLang is an interpreted language that is heavily inspired by the let lang from EOPL. It has all of the features of said language, but with slightly different syntax. The grammar is as follows:
+
+| Name | Syntax | Description |
+| --- | --- | --- |
+| Difference | `- <expression> <expression>` | Subtracts one expression from another. |
+| If-Else | `'if' <expression> 'then' <expression> 'else' <expression>` | Computes conditional statement. |
+| Let | `'let' <identifier> 'be' <expression> 'in' <expression>` | Adds new variable, then computes expression with it. |
+| Number | `<number>` | Evaluates to an integer. |
+| Product | ` * <expression> <expression>` | Multiplies two expressions. |
+| Sum | `+ <expression> <expression>` | Adds two expressions. |
+| Variable | `<identifier>` | Evaluates to the value of a variable. |
+
 ## Future
 
 In the future, I intend to add more features to the compiler in order to make it easier to develop more complex languages. This includes, but is not limited to:
