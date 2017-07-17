@@ -22,7 +22,7 @@ void init_bnf_grammar(int verbose) {
     }
 }
 
-void** parseArbno(char*, BnfStatement elem, BnfStatement delim);
+void** parseArbno(char*, BnfStatement elem, BnfStatement delim, BnfStatement state);
 void** parseIdentifier(char*);
 void** parseLiteral(char*, char*);
 void** parseSequence(char*, BnfStatement);
@@ -68,6 +68,8 @@ BnfStatement bnfUnion(int num, ... ) {
     for (i = 0; i < num; i++)
         states[i] = va_arg(args, void*);
     states[i] = NULL;
+
+    va_end(args);
 
     BnfStatement state = (BnfStatement) malloc(sizeof(struct bnf_statement));
     state->type = BNF_UNION;
@@ -138,7 +140,7 @@ BnfStatement bnfTrm() {
     return state;
 }
 
-BnfStatement bnfArbno(BnfStatement statement, BnfStatement delim) {
+BnfStatement bnfArb(BnfStatement statement, BnfStatement delim) {
     BnfStatement state = (BnfStatement) malloc(sizeof(struct bnf_statement));
     state->type = BNF_ARBNO;
     state->args = malloc(2 * sizeof(BnfStatement));
@@ -283,7 +285,7 @@ void** parseIdentifier(char *str) {
 void** parseSequence(char *str, BnfStatement state) {
     char *strt = str;
     BnfStatement *comps = (BnfStatement*) state->args;
-    
+
     // The arguments will be stored in a list so that when needed, they can
     // be extracted into an argument array or sequentially disposed of.
     LinkedList argList = makeLinkedList();
@@ -301,11 +303,12 @@ void** parseSequence(char *str, BnfStatement state) {
 
         if (type == BNF_LITERAL) {
             res = parseLiteral(str, (char*) comps[i]->args);
-            
+
         } else if (type == BNF_NUMBER) {
             res = parseNumber(str);
 
         } else if (type == BNF_IDENTIFIER) {
+
             // Find an identifier and its location.
             res = parseIdentifier(str);
 
@@ -328,6 +331,7 @@ void** parseSequence(char *str, BnfStatement state) {
                     
                     // Parse the rest of the statement, given the variable parsed correctly.
                     BnfStatement substate = bnfSeq2(&comps[i+1]);
+
                     void **strRes = parseSequence(strn, substate);
                     free(substate);
 
@@ -353,7 +357,6 @@ void** parseSequence(char *str, BnfStatement state) {
                         grammar->vars[varId]->dispose(varRes);
                     }
                 }
-                //else printf("    found nothing\n}\n");
             }
 
             if (vuStates[j]) {
@@ -366,8 +369,41 @@ void** parseSequence(char *str, BnfStatement state) {
                 res = NULL;
 
         } else if (type == BNF_ARBNO) {
-            // Parse a collection of items
-            res = parseArbno(str, ((BnfStatement*) comps[i]->args)[0], ((BnfStatement*) comps[i]->args)[1]);
+            BnfStatement poststate = bnfSeq2(&comps[i+1]);
+            
+            res = parseArbno(str, ((BnfStatement*) comps[i]->args)[0], ((BnfStatement*) comps[i]->args)[1], poststate);
+
+            if (!res) {
+                err = 1;
+            } else {
+                // Add the rest of the arguments
+                void **args = res[0];
+
+                int k;
+                for (k = 0; args[k]; k++) {
+                    enqueue(argList, args[k]);
+                }
+                
+                /*
+                for (k = 0; ((void**) args[0])[k]; k++)
+                    print_exp(((Exp*) args[0])[k]);
+                */
+                
+                // Progress the string
+                str = &str[*((int*) res[1])];
+                
+                // Garbage collection
+                free(res[0]);
+                free(res[1]);
+                free(res);
+                
+                // Terminate the string
+                while (comps[i])
+                    i++;
+                
+                break;
+            }
+
         } else if (type == BNF_TERMINATOR) {
             // The given string should have no more items to parse.
             int j = 0;
@@ -411,6 +447,7 @@ void** parseSequence(char *str, BnfStatement state) {
         disposeBnfSequence(state, argList);
         return NULL;
     }
+
     enqueue(argList, NULL);
 
     void **res = (void**) malloc(2 * sizeof(void*));
@@ -441,68 +478,109 @@ void** parseSequence(char *str, BnfStatement state) {
  *
  * note: delim MUST be a literal, or NULL if no delimiter is to be used.
  */
-void** parseArbno(char *str, BnfStatement elem, BnfStatement delim) {
+void** parseArbno(char *str, BnfStatement elem, BnfStatement delim, BnfStatement state) {
     char *strt = str;
     LinkedList vals = makeLinkedList();
     
-    // If the delimiter is an empty string, use NULL for simplicity.
-    if (!strcmp((char*) delim->args, ""))
-        delim = NULL;
-    
-    int n;
-    while (1) {
-        void **res;
+    void **output = parseSequence(str, elem);
+    if (output) {
 
-        // First, check for a lack of delimiter if one is required.
-        if (delim) {
-            res = parseLiteral(str, (char*) delim->args);
-            if (!res)
+        if (output[0])
+            enqueue(vals, output[0]);
+
+        str = &str[*((int*) output[1])];
+
+        free(output[1]);
+        free(output);
+        
+        int k = 0;
+        while ((output = parseSequence(str, delim))) {
+            k++;
+            
+            // Progress the string
+            str = &str[*((int*) output[1])];
+            free(output[0]);
+            free(output[1]);
+            free(output);
+
+            // Parse the next element
+            if (!(output = parseSequence(str, elem))) {
+                // There can be no more elements
                 break;
-            else {
-                // Proceed through the string
-                str = &str[*((int*) res[1])];
-                free(res[1]);
-                free(res);
             }
+
+            if (output[0])
+                enqueue(vals, output[0]);
+            
+            // Progress the string
+            str = &str[*((int*) output[1])];
+            free(output[1]);
+            free(output);
         }
+    }
 
-        res = parseSequence(str, elem);
-
-        if (!res) {
-            // No more statements were found.
-            if (delim) {
-                // Dispose of the previously determined values.
-                while (sizeOfLinkedList(vals))
-                    disposeBnfSequence(elem, dequeue(vals));
-                return NULL;
-            } else break;
+    // First, try to parse the rest of the string
+    if (!(output = parseSequence(str, state))) {
+        // Failed to parse
+        while (sizeOfLinkedList(vals)) {
+            void *del = dequeue(vals);
+            
+            /* TODO: Properly delete the items */
+            free(del);
         }
         
-        // Continue through the string
-        str = &str[*((int*) res[1])];
-        enqueue(vals, res);
-    }
-    enqueue(vals, NULL);
-    
-    // The result
-    void **result = (void**) malloc(2 * sizeof(void*));
-    
-    // Store each of the subresults
-    result[0] = (void**) malloc(sizeOfLinkedList(vals) * sizeof(void*));
-    for (n = 0; sizeOfLinkedList(vals); n++) {
-        void *res = dequeue(vals);
-        ((void**) result[0])[n] = res;
-        if (!res)
-            break;
-    }
+        // Final garbage collection
+        disposeLinkedList(vals);
 
-    disposeLinkedList(vals);
-    
-    // Provide the length of the statement parsed.
-    result[1] = malloc(sizeof(int));
-    *((int*) result[1]) = (int) (str - strt);
+        return NULL;
+    } else {
+        // values holds the args for the rest of the sequence
+        void **values = (void**) output[0];
 
-    return result;
+        int i;
+        
+        // Progress the string
+        str = &str[*((int*) output[1])];
+        free(output[1]);
+        free(output);
+        
+        // Compute the length of the argument array
+        int len = 0;
+        while (values[len])
+            len++;
+        
+        // Build enough space for the arbno values, the following
+        // values, and the NULL terminator.
+        output = (void**) malloc((len+2) * sizeof(void*));
+
+        // Provide the arbno values. We use value to store them.
+        values = (void**) malloc((sizeOfLinkedList(vals) + 1) * sizeof(void*));
+        for (i = 0; sizeOfLinkedList(vals); i++) {
+            values[i] = dequeue(vals);
+        }
+        values[i] = NULL;
+
+        output[0] = values;
+
+        // Add the followers
+        for (i = 0; i < len; i++) {
+            output[i+1] = values[i];
+        }
+        output[len+1] = NULL;
+
+        // Dispose of the linked list
+        disposeLinkedList(vals);
+
+        values = output;
+
+        output = (void**) malloc(2 * sizeof(void*));
+        output[0] = values;
+
+        output[1] = (void*) malloc(sizeof(int));
+        *((int*) output[1]) = (int) (str - strt);
+
+        return output;
+    }
 
 }
 
@@ -595,6 +673,8 @@ void printBnfGrammar(BnfGrammar grammar) {
 void printBnfSequence(BnfStatement statement) {
     BnfStatement *states = (BnfStatement*) statement->args;
 
+    printf("(");
+
     int i, j;
     for (i = 0; states[i]; i++) {
         BnfStatement state = states[i];
@@ -619,20 +699,24 @@ void printBnfSequence(BnfStatement statement) {
                 printf(" <%i>", *((int*) state->args));
                 break;
             case BNF_SEQUENCE:
-                printBnfSequence(statement);
+                printf(" (");
+                printBnfSequence(state);
+                printf(" )");
                 break;
             case BNF_ARBNO:
-                printf("arbno(");
+                printf(" arbno [");
                 printBnfSequence(((BnfStatement*) state->args)[0]);
-                printf(" ,");
+                printf(" ][");
                 printBnfSequence(((BnfStatement*) state->args)[1]);
-                printf(" )");
+                printf(" ]");
                 break;
             case BNF_TERMINATOR:
                 printf(" ;");
                 break;
         }
     }
+
+    printf(" )");
     
     return;
 }
