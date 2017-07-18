@@ -22,7 +22,7 @@ void init_bnf_grammar(int verbose) {
     }
 }
 
-void** parseArbno(char*, BnfStatement elem, BnfStatement delim, BnfStatement state);
+void** parseArbno(char*, BnfGrammar grammar, BnfStatement arbState, BnfStatement state);
 void** parseIdentifier(char*);
 void** parseLiteral(char*, char*);
 void** parseSequence(char*, BnfStatement);
@@ -181,6 +181,17 @@ void disposeBnfSequence(BnfStatement state, LinkedList argList) {
             void *seqArgs = dequeue(argList);
             disposeBnfSequence(s, buildLinkedList(s->args));
             free(seqArgs);
+        } else if (type == BNF_ARBNO) {
+            void **arbArgs = dequeue(argList);
+            BnfStatement elem = ((BnfStatement*) s->args)[0];
+            
+            int j;
+            for (j = 0; arbArgs[j]; j++) {
+                LinkedList tmp = buildLinkedList(arbArgs[j]);
+                free(arbArgs[j]);
+                disposeBnfSequence(elem, tmp);
+            }
+            free(arbArgs);
         }
     }
     
@@ -371,7 +382,7 @@ void** parseSequence(char *str, BnfStatement state) {
         } else if (type == BNF_ARBNO) {
             BnfStatement poststate = bnfSeq2(&comps[i+1]);
             
-            res = parseArbno(str, ((BnfStatement*) comps[i]->args)[0], ((BnfStatement*) comps[i]->args)[1], poststate);
+            res = parseArbno(str, grammar, comps[i], poststate);
 
             if (!res) {
                 err = 1;
@@ -478,7 +489,10 @@ void** parseSequence(char *str, BnfStatement state) {
  *
  * note: delim MUST be a literal, or NULL if no delimiter is to be used.
  */
-void** parseArbno(char *str, BnfStatement elem, BnfStatement delim, BnfStatement state) {
+void** parseArbno(char *str, BnfGrammar grammar, BnfStatement arbState, BnfStatement state) {
+    BnfStatement elem = ((BnfStatement*) arbState->args)[0];
+    BnfStatement delim = ((BnfStatement*) arbState->args)[1];
+
     char *strt = str;
     LinkedList vals = makeLinkedList();
     
@@ -521,12 +535,15 @@ void** parseArbno(char *str, BnfStatement elem, BnfStatement delim, BnfStatement
 
     // First, try to parse the rest of the string
     if (!(output = parseSequence(str, state))) {
+
         // Failed to parse
         while (sizeOfLinkedList(vals)) {
-            void *del = dequeue(vals);
+            void **del = (void**) dequeue(vals);
             
-            /* TODO: Properly delete the items */
+            LinkedList list = buildLinkedList(del);
             free(del);
+                
+            disposeBnfSequence(elem, list);
         }
         
         // Final garbage collection
