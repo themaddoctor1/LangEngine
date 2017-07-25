@@ -328,6 +328,8 @@ void** parseSequence(char *str, BnfStatement state) {
             BnfVariable var = grammar->vars[varId];
             BnfStatement *vuStates = (BnfStatement*) var->values->args;
             
+            BnfStatement substate = bnfSeq2(&comps[i+1]);
+
             int j;
             for (j = 0; vuStates[j]; j++) {
                 // First, generate the result of the variable.
@@ -341,10 +343,8 @@ void** parseSequence(char *str, BnfStatement state) {
                     free(res);
                     
                     // Parse the rest of the statement, given the variable parsed correctly.
-                    BnfStatement substate = bnfSeq2(&comps[i+1]);
 
                     void **strRes = parseSequence(strn, substate);
-                    free(substate);
 
                     if (strRes) {
                         // The variable parsed correctly, prep the variable for return.
@@ -369,6 +369,8 @@ void** parseSequence(char *str, BnfStatement state) {
                     }
                 }
             }
+
+            free(substate);
 
             if (vuStates[j]) {
                 // A result was found, so proceed to end state
@@ -447,6 +449,8 @@ void** parseSequence(char *str, BnfStatement state) {
             // Garbage collection
             free(res[1]);
             free(res);
+
+            res = NULL;
         } else {
             err = 1;
             break;
