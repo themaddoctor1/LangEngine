@@ -152,6 +152,10 @@ SimpleLang is an interpreted language that is heavily inspired by the let lang f
 | Sum | `+ <expression> <expression>` | Adds two expressions. |
 | Variable | `<identifier>` | Evaluates to the value of a variable. |
 
+### PemdasLang
+
+PemdasLang is an interpreted language that is specifically designed to provide a working example of an order of operation. The grammar allows for the use of addition, subtraction, multiplication, division, and parentheses.
+
 ## Future
 
 In the future, I intend to add more features to the compiler in order to make it easier to develop more complex languages. This includes, but is not limited to:
