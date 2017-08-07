@@ -4,6 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <unistd.h>
+#include <sys/wait.h>
+
 #include "expvalset.h"
 #include "expressionset.h"
 #include "environmentset.h"
@@ -315,9 +318,26 @@ int test(int choice) {
     if (choice <= 0) {
         int i;
         for (i = 0; tests[i]; i++) {
+            int n, pid;
             printf("Running test %i...\n", i+1);
-            if (tests[i]()) {
+            
+            pid = fork();
+            if (pid > 0)
+                // Parent process
+                waitpid(pid, &n, 0);
+            else if (!pid) {
+                // Child process will only run the test, then exit with its error code.
+                exit(tests[i]());
+            } else {
+                // Could not run the test
+                printf("error: could not create test subprocess!\n\n");
+                exit(1);
+            }
+            
+            if (n) {
                 printf(ANSI_COLOR_BOLD ANSI_COLOR_ULINE ANSI_COLOR_RED "Failed test %i!\n" ANSI_COLOR_RESET, i+1);
+                if (n == 139)
+                    printf("reason: segmentation fault\n");
                 res++;
             } else
                 printf(ANSI_COLOR_BOLD ANSI_COLOR_ULINE ANSI_COLOR_GREEN "Passed test %i\n" ANSI_COLOR_RESET, i+1);

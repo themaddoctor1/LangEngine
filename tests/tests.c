@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <unistd.h>
+#include <sys/wait.h>
+
 #include "expression_tests.h"
 
 #include "bnf_parser.h"
@@ -37,8 +40,23 @@ int main(int argc, char *argv[]) {
     if (choice <= 0) {
         int i;
         for (i = 0; tests[i]; i++) {
+            int n, pid;
             printf("Running test %i...\n", i+1);
-            if (tests[i]()) {
+            
+            pid = fork();
+            if (pid > 0)
+                // Parent process
+                waitpid(pid, &n, 0);
+            else if (!pid) {
+                // Child process will only run the test, then exit with its error code.
+                exit(tests[i]());
+            } else {
+                // Could not run the test
+                printf("error: could not create test subprocess!\n\n");
+                exit(1);
+            }
+
+            if (n) {
                 printf("Failed test %i!\n\n", i+1);
                 res++;
             } else
